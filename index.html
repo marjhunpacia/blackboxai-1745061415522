@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Important Sentence Highlighter</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+    }
+    .highlight {
+      background-color: #fef3c7; /* Tailwind yellow-100 */
+      border-left: 4px solid #fbbf24; /* Tailwind yellow-400 */
+      padding-left: 0.5rem;
+      transition: background-color 0.4s ease, border-color 0.4s ease;
+    }
+    .highlight:hover {
+      background-color: #fde68a; /* Tailwind yellow-300 */
+      border-color: #f59e0b; /* Tailwind yellow-500 */
+    }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col items-center p-6">
+  <h1 class="text-3xl font-bold mb-6 text-gray-800">Important Sentence Highlighter</h1>
+  <textarea id="inputParagraph" rows="6" placeholder="Enter your paragraph here..." class="w-full max-w-3xl p-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400 resize-none"></textarea>
+  <button id="highlightBtn" class="mt-4 px-6 py-2 bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-semibold rounded-md shadow-md transition-colors flex items-center gap-2">
+    <i class="fas fa-highlighter"></i> Highlight Important Sentences
+  </button>
+  <div id="output" class="mt-8 w-full max-w-3xl p-4 bg-white rounded-md shadow-md text-gray-800 whitespace-pre-wrap"></div>
+
+  <script>
+    // Improved heuristic to identify important sentences:
+    // Sentences containing keywords or with higher TF-IDF-like score (simulated) are highlighted.
+    const keywords = ['important', 'key', 'significant', 'notable', 'crucial', 'essential', 'vital', 'main', 'primary', 'highlight', 'focus'];
+
+    function splitIntoSentences(text) {
+      return text.match(/[^.!?]+[.!?]+[\])'"`’”]*|.+$/g) || [];
+    }
+
+    function sentenceScore(sentence) {
+      const lower = sentence.toLowerCase();
+      let score = 0;
+      for (const kw of keywords) {
+        if (lower.includes(kw)) score += 2;
+      }
+      // Add score for sentence length (longer sentences might be more important)
+      score += Math.min(sentence.length / 100, 2);
+      return score;
+    }
+
+    function highlightImportantSentences(sentences) {
+      const scores = sentences.map(sentenceScore);
+      const avgScore = scores.reduce((a, b) => a + b, 0) / scores.length;
+      return sentences.map((sentence, i) => {
+        if (scores[i] >= avgScore) {
+          return `<span class="highlight">${sentence.trim()}</span>`;
+        } else {
+          return sentence.trim();
+        }
+      }).join(' ');
+    }
+
+    document.getElementById('highlightBtn').addEventListener('click', () => {
+      const input = document.getElementById('inputParagraph').value.trim();
+      if (!input) {
+        alert('Please enter a paragraph.');
+        return;
+      }
+      const sentences = splitIntoSentences(input);
+      const highlightedHTML = highlightImportantSentences(sentences);
+      const outputDiv = document.getElementById('output');
+      outputDiv.innerHTML = highlightedHTML;
+    });
+  </script>
+</body>
+</html>
